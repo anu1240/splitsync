@@ -86,17 +86,11 @@ resource "aws_security_group" "app_sg" {
 }
 
 # ─── EC2 INSTANCE ─────────────────────────────────────────
-data "aws_ami" "ubuntu" {
-  most_recent = true
-  owners      = ["099720109477"] # Canonical
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-22.04-amd64-server-*"]
-  }
+variable "ami_id" {
+  default = "ami-0f58b397bc5c1f2e8"
 }
-
 resource "aws_instance" "app" {
-  ami                    = data.aws_ami.ubuntu.id
+  ami                    = var.ami_id
   instance_type          = "t3.micro"
   key_name               = var.key_name
   subnet_id              = aws_subnet.public.id

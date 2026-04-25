@@ -6,7 +6,7 @@ pipeline {
         TF_DIR            = 'terraform'
         ANSIBLE_DIR       = 'ansible'
         KEY_PATH          = credentials('EC2_SSH_KEY')        // Add in Jenkins credentials
-        GIT_REPO_URL      = 'https://github.com/YOUR_USERNAME/splitsync.git'
+        GIT_REPO_URL      = 'https://github.com/anu1240/splitsync.git'
     }
 
     stages {
