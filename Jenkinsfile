@@ -16,13 +16,10 @@ pipeline {
             }
         }
 
-        stage('2. Deploy via Ansible') {
+        sstage('2. Deploy via Ansible') {
             steps {
                 echo '⚙️ Deploying to EC2 via Ansible...'
                 sh """
-                    sed -i 's/EC2_PUBLIC_IP_PLACEHOLDER/${EC2_IP}/' ansible/inventory.ini || true
-                    sed -i 's|your-key.pem|/var/lib/jenkins/.ssh/splitsync-key.pem|' ansible/inventory.ini || true
-                    sed -i 's|/var/lib/jenkins/.ssh/splitsync-key.pem.*ansible|/var/lib/jenkins/.ssh/splitsync-key.pem ansible|' ansible/inventory.ini || true
                     export GIT_REPO_URL=${GIT_REPO_URL}
                     ansible-playbook -i ansible/inventory.ini ansible/playbook.yml
                 """
