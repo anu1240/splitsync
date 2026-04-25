@@ -12,15 +12,27 @@ export default function App() {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [newGroupName, setNewGroupName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [userSet, setUserSet] = useState(false);
+  const [tempName, setTempName] = useState("");
 
   useEffect(() => {
-    fetchGroups();
+    const saved = localStorage.getItem("splitsync_user");
+    if (saved) { setUserName(saved); setUserSet(true); fetchGroups(); }
   }, []);
 
   async function fetchGroups() {
     const res = await fetch(`${API}/api/groups`);
     const data = await res.json();
     setGroups(data);
+  }
+
+  function handleSetUser() {
+    if (!tempName.trim()) return;
+    localStorage.setItem("splitsync_user", tempName.trim());
+    setUserName(tempName.trim());
+    setUserSet(true);
+    fetchGroups();
   }
 
   async function createGroup() {
@@ -36,47 +48,78 @@ export default function App() {
     setLoading(false);
   }
 
+  if (!userSet) {
+    return (
+      <div className="onboard-screen">
+        <div className="onboard-card">
+          <div className="onboard-logo">
+            <span className="logo-bolt">⚡</span>
+            <span className="logo-word">SplitSync</span>
+          </div>
+          <p className="onboard-tagline">Split expenses. Stay friends.</p>
+          <div className="onboard-form">
+            <label className="onboard-label">What should we call you?</label>
+            <input
+              className="onboard-input"
+              placeholder="Enter your name..."
+              value={tempName}
+              onChange={e => setTempName(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleSetUser()}
+              autoFocus
+            />
+            <button className="onboard-btn" onClick={handleSetUser}>
+              Get Started →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="app">
       <header className="header">
         <div className="header-inner">
           <div className="logo">
-            <span className="logo-icon">⚡</span>
-            <span className="logo-text">SplitSync</span>
+            <span className="logo-bolt">⚡</span>
+            <span className="logo-word">SplitSync</span>
           </div>
-          <span className="header-sub">Real-Time Expense Splitter</span>
+          <div className="header-right">
+            <div className="user-pill">
+              <span className="user-avatar">{userName[0].toUpperCase()}</span>
+              <span className="user-name">{userName}</span>
+            </div>
+          </div>
         </div>
       </header>
 
       <main className="main">
         {!selectedGroup ? (
           <div className="home">
-            <div className="create-card">
-              <h2>Create a Group</h2>
-              <div className="input-row">
-                <input
-                  value={newGroupName}
-                  onChange={(e) => setNewGroupName(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && createGroup()}
-                  placeholder="e.g. Goa Trip, Flat Expenses..."
-                  className="input"
-                />
-                <button onClick={createGroup} disabled={loading} className="btn-primary">
-                  {loading ? "Creating..." : "Create"}
-                </button>
-              </div>
+            <div className="home-hero">
+              <h1 className="hero-title">Your Groups</h1>
+              <p className="hero-sub">Track shared expenses in real-time</p>
             </div>
-
-            <GroupList
-              groups={groups}
-              onSelect={(g) => setSelectedGroup(g)}
-            />
+            <div className="create-row">
+              <input
+                value={newGroupName}
+                onChange={e => setNewGroupName(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && createGroup()}
+                placeholder="✦  New group name — Goa Trip, Flat, etc."
+                className="create-input"
+              />
+              <button onClick={createGroup} disabled={loading} className="create-btn">
+                {loading ? "..." : "+ Create"}
+              </button>
+            </div>
+            <GroupList groups={groups} currentUser={userName} onSelect={setSelectedGroup} />
           </div>
         ) : (
           <GroupDetail
             group={selectedGroup}
             API={API}
             socket={socket}
+            currentUser={userName}
             onBack={() => { setSelectedGroup(null); fetchGroups(); }}
           />
         )}
