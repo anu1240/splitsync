@@ -1,0 +1,26 @@
+# Node
+node_modules/
+npm-debug.log
+
+# Frontend build
+frontend/dist/
+
+# Environment files - NEVER commit these
+.env
+backend/.env
+frontend/.env
+
+# Terraform state - contains sensitive info
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/terraform.tfvars
+
+# SSH Keys - NEVER commit
+*.pem
+*.ppk
+
+# OS
+.DS_Store
+Thumbs.db

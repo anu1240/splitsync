@@ -1,0 +1,100 @@
+---
+- name: Configure EC2 and Deploy SplitSync
+  hosts: splitsync
+  become: yes
+  vars:
+    app_dir: /home/ubuntu/splitsync
+    ec2_public_ip: "{{ ansible_host }}"
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install required packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - git
+        state: present
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+
+    - name: Install Docker
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+
+    - name: Install Docker Compose
+      get_url:
+        url: https://github.com/docker/compose/releases/download/v2.20.0/docker-compose-linux-x86_64
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+
+    - name: Add ubuntu user to docker group
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
+
+    - name: Start Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Clone/pull latest code
+      git:
+        repo: "{{ lookup('env', 'GIT_REPO_URL') }}"
+        dest: "{{ app_dir }}"
+        version: main
+        force: yes
+
+    - name: Set EC2 IP environment variable
+      lineinfile:
+        path: /etc/environment
+        line: "EC2_PUBLIC_IP={{ ec2_public_ip }}"
+        create: yes
+
+    - name: Stop existing containers
+      shell: docker-compose down --remove-orphans
+      args:
+        chdir: "{{ app_dir }}"
+      ignore_errors: yes
+
+    - name: Build and start containers
+      shell: EC2_PUBLIC_IP={{ ec2_public_ip }} docker-compose up -d --build
+      args:
+        chdir: "{{ app_dir }}"
+
+    - name: Wait for app to be ready
+      wait_for:
+        port: 80
+        host: localhost
+        delay: 10
+        timeout: 120
+
+    - name: Verify deployment
+      uri:
+        url: "http://localhost:5000/health"
+        status_code: 200
+      register: health_check
+
+    - name: Print deployment status
+      debug:
+        msg: "✅ SplitSync deployed at http://{{ ec2_public_ip }}"
