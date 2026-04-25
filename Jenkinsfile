@@ -20,11 +20,9 @@ pipeline {
             steps {
                 echo '⚙️ Deploying to EC2 via Ansible...'
                 sh """
-                    cp ${KEY_PATH} /tmp/splitsync_key.pem
-                    chmod 600 /tmp/splitsync_key.pem
                     sed -i 's/EC2_PUBLIC_IP_PLACEHOLDER/${EC2_IP}/' ansible/inventory.ini || true
-                    sed -i 's|your-key.pem|/tmp/splitsync_key.pem|' ansible/inventory.ini || true
-                    sed -i 's|/tmp/splitsync_key.pem.*ansible|/tmp/splitsync_key.pem ansible|' ansible/inventory.ini || true
+                    sed -i 's|your-key.pem|/var/lib/jenkins/.ssh/splitsync-key.pem|' ansible/inventory.ini || true
+                    sed -i 's|/var/lib/jenkins/.ssh/splitsync-key.pem.*ansible|/var/lib/jenkins/.ssh/splitsync-key.pem ansible|' ansible/inventory.ini || true
                     export GIT_REPO_URL=${GIT_REPO_URL}
                     ansible-playbook -i ansible/inventory.ini ansible/playbook.yml
                 """
