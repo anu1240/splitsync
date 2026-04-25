@@ -16,7 +16,7 @@ pipeline {
             }
         }
 
-        sstage('2. Deploy via Ansible') {
+        stage('2. Deploy via Ansible') {
             steps {
                 echo '⚙️ Deploying to EC2 via Ansible...'
                 sh """
