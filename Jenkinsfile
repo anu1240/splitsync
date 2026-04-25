@@ -60,10 +60,7 @@ pipeline {
         stage('4. Wait for EC2 to be Ready') {
             steps {
                 echo '⏳ Waiting for EC2 instance to boot...'
-                sh 'sleep 45'
-                sh """
-                    timeout 120 bash -c 'until ssh -o StrictHostKeyChecking=no -i ${KEY_PATH} ubuntu@${env.EC2_PUBLIC_IP} "echo ready" 2>/dev/null; do sleep 5; done'
-                """
+                sh 'sleep 60'
             }
         }
 
