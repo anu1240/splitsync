@@ -20,11 +20,12 @@ export default function App() {
 
   useEffect(() => {
     const saved = localStorage.getItem("splitsync_user");
-    if (saved) { setUserName(saved); setUserSet(true); fetchGroups(); }
+    if (saved) { setUserName(saved); setUserSet(true); fetchGroups(saved); }
   }, []);
 
-  async function fetchGroups() {
-    const res = await fetch(`${API}/api/groups?member=${encodeURIComponent(userName)}`);
+  async function fetchGroups(name) {
+    const user = name || userName;
+    const res = await fetch(`${API}/api/groups?member=${encodeURIComponent(user)}`);
     const data = await res.json();
     setGroups(data);
   }
@@ -33,7 +34,7 @@ export default function App() {
     localStorage.setItem("splitsync_user", name);
     setUserName(name);
     setUserSet(true);
-    fetchGroups();
+    fetchGroups(name);
   }
 
   function handleLogout() {
