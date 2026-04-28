@@ -36,39 +36,18 @@ export default function App() {
     fetchGroups();
   }
 
-  function handleChangeName() {
-    const newName = prompt("Change your name:", userName);
-    if (newName && newName.trim()) {
-      localStorage.setItem("splitsync_user", newName.trim());
-      setUserName(newName.trim());
-    }
-  }
-
-  async function deleteGroup(e, groupId) {
-    e.stopPropagation();
-    if (!confirm("Delete this group? This cannot be undone.")) return;
-    await fetch(`${API}/api/groups/${groupId}`, { method: "DELETE" });
-    addActivity("Group deleted", "warn");
-    fetchGroups();
-  }
-
-  async function renameGroup(e, groupId, currentName) {
-    e.stopPropagation();
-    const newName = prompt("Rename group:", currentName);
-    if (newName && newName.trim() && newName.trim() !== currentName) {
-      await fetch(`${API}/api/groups/${groupId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newName.trim() }),
-      });
-      addActivity(`Group renamed to "${newName.trim()}"`, "success");
-      fetchGroups();
-    }
+  function handleLogout() {
+    localStorage.removeItem("splitsync_user");
+    setUserName("");
+    setUserSet(false);
+    setSelectedGroup(null);
+    setGroups([]);
+    setActivity([]);
   }
 
   function addActivity(msg, type = "info") {
-    const item = { id: Date.now(), msg, type, time: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) };
-    setActivity(prev => [item, ...prev].slice(0, 20));
+    const id = Date.now();
+    setActivity(prev => [{ id, msg, type, time: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) }, ...prev].slice(0, 20));
   }
 
   async function createGroup() {
@@ -86,128 +65,165 @@ export default function App() {
     setLoading(false);
   }
 
-  if (!userSet) return <Landing onStart={handleSetUser} />;
+  async function deleteGroup(e, groupId, groupName) {
+    e.stopPropagation();
+    if (!window.confirm(`Delete "${groupName}"? This cannot be undone.`)) return;
+    await fetch(`${API}/api/groups/${groupId}`, { method: "DELETE" });
+    addActivity(`Group "${groupName}" deleted`, "warn");
+    fetchGroups();
+  }
+
+  async function renameGroup(e, groupId, currentName) {
+    e.stopPropagation();
+    const newName = window.prompt("Rename group:", currentName);
+    if (newName && newName.trim() && newName.trim() !== currentName) {
+      await fetch(`${API}/api/groups/${groupId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newName.trim() }),
+      });
+      addActivity(`Group renamed to "${newName.trim()}"`, "success");
+      fetchGroups();
+    }
+  }
+
+  if (!userSet) return <Landing onEnter={handleSetUser} />;
 
   return (
     <div className="app">
       <header className="header">
         <div className="header-inner">
           <div className="logo" onClick={() => setSelectedGroup(null)} style={{ cursor: "pointer" }}>
-            <div className="logo-mark">S</div>
-            <div className="logo-text-wrap">
-              <span className="logo-word">SplitSync</span>
-              <span className="logo-tagline">expense tracker</span>
-            </div>
+            <span className="logo-bolt">⚡</span>
+            <span className="logo-word">SplitSync</span>
           </div>
           <div className="header-center">
             {selectedGroup && (
               <div className="breadcrumb">
-                <span onClick={() => setSelectedGroup(null)} className="breadcrumb-home">Home</span>
-                <span className="breadcrumb-sep">/</span>
+                <span className="breadcrumb-home" onClick={() => setSelectedGroup(null)}>Groups</span>
+                <span className="breadcrumb-sep">›</span>
                 <span className="breadcrumb-current">{selectedGroup.name}</span>
               </div>
             )}
           </div>
           <div className="header-right">
-            <div className="user-pill" onClick={handleChangeName} title="Click to change name" style={{cursor:"pointer"}}>
+            <div className="user-pill">
               <div className="user-avatar-sm">{userName[0].toUpperCase()}</div>
               <span className="user-name-sm">{userName}</span>
-              <span style={{color:"var(--muted)", fontSize:"0.75rem"}}>✎</span>
+              <button className="logout-btn" onClick={handleLogout} title="Switch user">⏻</button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="main">
-        {!selectedGroup ? (
-          <div className="home">
-            <div className="home-layout">
-              <div className="home-left">
-                <div className="home-greeting">
-                  <span className="greeting-wave">👋</span>
-                  <div>
-                    <h1 className="home-title">Hey, {userName}</h1>
-                    <p className="home-sub">Here are your expense groups</p>
-                  </div>
+      <div className="app-body">
+        <main className="main">
+          {!selectedGroup ? (
+            <div className="home">
+              <div className="home-top">
+                <div>
+                  <h1 className="home-title">
+                    {getGreeting()}, <span className="name-highlight">{userName}</span> 👋
+                  </h1>
+                  <p className="home-sub">
+                    You have <strong>{groups.length}</strong> group{groups.length !== 1 ? "s" : ""}
+                  </p>
                 </div>
+                <button className="create-group-btn" onClick={() => setShowCreate(true)}>
+                  + New Group
+                </button>
+              </div>
 
-                <div className="stats-row">
-                  <div className="stat-card">
-                    <div className="stat-value">{groups.length}</div>
-                    <div className="stat-label">Groups</div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-value accent">Active</div>
-                    <div className="stat-label">Status</div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-value">{activity.length}</div>
-                    <div className="stat-label">Activities</div>
-                  </div>
-                </div>
-
-                {showCreate ? (
-                  <div className="create-card">
-                    <div className="create-card-title">New Group</div>
-                    <input value={newGroupName} onChange={e => setNewGroupName(e.target.value)}
+              {showCreate && (
+                <div className="modal-overlay" onClick={() => setShowCreate(false)}>
+                  <div className="modal" onClick={e => e.stopPropagation()}>
+                    <div className="modal-header">
+                      <div className="modal-title">Create a new group</div>
+                      <button className="modal-close" onClick={() => setShowCreate(false)}>✕</button>
+                    </div>
+                    <p className="modal-hint">Give your group a memorable name</p>
+                    <input
+                      className="modal-input"
+                      placeholder="e.g. Goa Trip, Flat, Office Lunch..."
+                      value={newGroupName}
+                      onChange={e => setNewGroupName(e.target.value)}
                       onKeyDown={e => e.key === "Enter" && createGroup()}
-                      placeholder="e.g. Goa Trip, Flat Expenses..." className="create-input" autoFocus />
-                    <div className="create-actions">
-                      <button onClick={() => setShowCreate(false)} className="btn-ghost">Cancel</button>
-                      <button onClick={createGroup} disabled={loading} className="btn-teal">
+                      autoFocus
+                    />
+                    <div className="modal-suggestions">
+                      {["🏖️ Goa Trip", "🏠 Flat", "✈️ Europe", "🍕 Lunch Gang"].map(s => (
+                        <button key={s} className="suggestion-chip"
+                          onClick={() => setNewGroupName(s.split(" ").slice(1).join(" "))}>
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="modal-actions">
+                      <button className="modal-cancel" onClick={() => setShowCreate(false)}>Cancel</button>
+                      <button className="modal-confirm" onClick={createGroup} disabled={loading}>
                         {loading ? "Creating..." : "Create Group →"}
                       </button>
                     </div>
                   </div>
-                ) : (
-                  <button className="new-group-btn" onClick={() => setShowCreate(true)}>
-                    <span className="new-group-plus">+</span>
-                    <span>New Group</span>
-                  </button>
-                )}
-
-                <GroupList groups={groups} currentUser={userName} onSelect={setSelectedGroup} onDelete={deleteGroup} onRename={renameGroup} />
-              </div>
-
-              <div className="home-right">
-                <div className="activity-panel">
-                  <div className="activity-header">
-                    <span className="activity-title">Live Activity</span>
-                    <span className="live-badge"><span className="live-dot-sm" />LIVE</span>
-                  </div>
-                  {activity.length === 0 ? (
-                    <div className="activity-empty">
-                      <div className="activity-empty-icon">📡</div>
-                      <p>Activity will appear here in real-time</p>
-                    </div>
-                  ) : (
-                    <div className="activity-list">
-                      {activity.map(a => (
-                        <div key={a.id} className={`activity-item type-${a.type}`}>
-                          <div className="activity-dot" />
-                          <div className="activity-content">
-                            <div className="activity-msg">{a.msg}</div>
-                            <div className="activity-time">{a.time}</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
-              </div>
+              )}
+
+              <GroupList
+                groups={groups}
+                currentUser={userName}
+                onSelect={setSelectedGroup}
+                onDelete={deleteGroup}
+                onRename={renameGroup}
+              />
             </div>
+          ) : (
+            <GroupDetail
+              group={selectedGroup}
+              API={API}
+              socket={socket}
+              currentUser={userName}
+              onBack={() => { setSelectedGroup(null); fetchGroups(); }}
+              onActivity={addActivity}
+            />
+          )}
+        </main>
+
+        <aside className="sidebar">
+          <div className="sidebar-header">
+            <span className="live-indicator">
+              <span className="live-dot-sm" />
+              Live Feed
+            </span>
           </div>
-        ) : (
-          <GroupDetail
-            group={selectedGroup}
-            API={API}
-            socket={socket}
-            currentUser={userName}
-            onBack={() => { setSelectedGroup(null); fetchGroups(); }}
-            onActivity={addActivity}
-          />
-        )}
-      </main>
+          {activity.length === 0 ? (
+            <div className="sidebar-empty">
+              <div className="sidebar-empty-icon">📡</div>
+              <div>Activity will appear here in real-time</div>
+            </div>
+          ) : (
+            <div className="activity-list">
+              {activity.map(a => (
+                <div key={a.id} className={`activity-item activity-${a.type}`}>
+                  <div className="activity-icon">
+                    {a.type === "success" ? "✓" : a.type === "expense" ? "₹" : a.type === "member" ? "👤" : a.type === "warn" ? "!" : "•"}
+                  </div>
+                  <div className="activity-body">
+                    <div className="activity-msg">{a.msg}</div>
+                    <div className="activity-time">{a.time}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </aside>
+      </div>
     </div>
   );
+}
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
 }

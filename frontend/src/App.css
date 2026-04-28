@@ -266,7 +266,7 @@ html, body {
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: 999px;
-  padding: 0.3rem 0.75rem 0.3rem 0.3rem;
+  padding: 0.3rem 0.4rem 0.3rem 0.3rem;
 }
 .user-avatar-sm {
   width: 26px; height: 26px;
@@ -278,6 +278,26 @@ html, body {
   font-family: var(--font-head);
 }
 .user-name-sm { font-size: 0.83rem; font-weight: 500; color: var(--text2); }
+
+/* Logout button */
+.logout-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0.15rem 0.3rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.logout-btn:hover {
+  color: var(--red);
+  background: rgba(255, 85, 119, 0.12);
+}
 
 /* ════════════════════════════════════════════
    APP BODY
@@ -494,6 +514,29 @@ html, body {
   background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%);
   border-radius: 50%;
 }
+
+/* Group card action buttons */
+.gc-actions {
+  display: flex;
+  gap: 0.3rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.group-card:hover .gc-actions { opacity: 1; }
+.gc-action-btn {
+  width: 26px; height: 26px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+  color: rgba(255,255,255,0.5);
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  font-family: var(--font-body);
+}
+.gc-action-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+.gc-delete-btn:hover { background: rgba(255,85,119,0.2); border-color: var(--red); color: var(--red); }
 
 /* Empty state */
 .empty-state {
@@ -1020,10 +1063,11 @@ html, body {
   border-radius: 10px;
   animation: slideIn 0.3s ease;
 }
-.activity-info  { border-left: 2px solid var(--teal); }
+.activity-info    { border-left: 2px solid var(--teal); }
 .activity-expense { border-left: 2px solid var(--accent); }
-.activity-member { border-left: 2px solid #8B5CF6; }
+.activity-member  { border-left: 2px solid #8B5CF6; }
 .activity-success { border-left: 2px solid var(--green); }
+.activity-warn    { border-left: 2px solid var(--red); }
 
 .activity-icon {
   width: 22px; height: 22px;
@@ -1141,25 +1185,3 @@ html, body {
   .landing-cta { flex-direction: column; }
   .landing-title { font-size: 2.5rem; }
 }
-/* Group card action buttons */
-.gc-actions {
-  display: flex;
-  gap: 0.3rem;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-.group-card:hover .gc-actions { opacity: 1; }
-.gc-action-btn {
-  width: 26px; height: 26px;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 6px;
-  color: rgba(255,255,255,0.5);
-  font-size: 0.75rem;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.15s;
-  font-family: var(--font-body);
-}
-.gc-action-btn:hover { background: rgba(255,255,255,0.15); color: white; }
-.gc-delete-btn:hover { background: rgba(255,85,119,0.2); border-color: var(--red); color: var(--red); }
