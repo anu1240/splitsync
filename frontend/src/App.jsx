@@ -57,7 +57,7 @@ export default function App() {
     await fetch(`${API}/api/groups`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newGroupName }),
+      body: JSON.stringify({ name: newGroupName, createdBy: userName }),
     });
     addActivity(`Group "${newGroupName}" created`, "success");
     setNewGroupName("");

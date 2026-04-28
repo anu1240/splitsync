@@ -63,11 +63,18 @@ async function initDB() {
 
 // ─── GROUPS ───────────────────────────────────────────────
 app.post('/api/groups', async (req, res) => {
-  const { name } = req.body;
+  const { name, createdBy } = req.body;
   const result = await pool.query(
     'INSERT INTO groups (name) VALUES ($1) RETURNING *', [name]
   );
-  res.json(result.rows[0]);
+  const group = result.rows[0];
+  if (createdBy) {
+    await pool.query(
+      'INSERT INTO members (group_id, name) VALUES ($1, $2)',
+      [group.id, createdBy]
+    );
+  }
+  res.json(group);
 });
 
 app.get('/api/groups', async (req, res) => {
