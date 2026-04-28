@@ -18,6 +18,18 @@ export default function GroupList({ groups, currentUser, onSelect, onDelete, onR
     );
   }
 
+  function handleDelete(e, id, name) {
+    e.preventDefault();
+    e.stopPropagation();
+    onDelete(e, id, name);
+  }
+
+  function handleRename(e, id, name) {
+    e.preventDefault();
+    e.stopPropagation();
+    onRename(e, id, name);
+  }
+
   return (
     <div className="groups-section">
       <div className="section-label">Your Groups · {groups.length}</div>
@@ -28,9 +40,19 @@ export default function GroupList({ groups, currentUser, onSelect, onDelete, onR
             onClick={() => onSelect(g)}>
             <div className="gc-top">
               <span className="gc-emoji">{CATEGORY_EMOJIS[i % CATEGORY_EMOJIS.length]}</span>
-              <div className="gc-actions" onClick={e => e.stopPropagation()}>
-                <button className="gc-action-btn" onClick={e => onRename(e, g.id, g.name)} title="Rename">✎</button>
-                <button className="gc-action-btn gc-delete-btn" onClick={e => onDelete(e, g.id, g.name)} title="Delete">✕</button>
+              <div className="gc-actions">
+                <button
+                  className="gc-action-btn"
+                  onClick={(e) => handleRename(e, g.id, g.name)}
+                  title="Rename">
+                  ✎
+                </button>
+                <button
+                  className="gc-action-btn gc-delete-btn"
+                  onClick={(e) => handleDelete(e, g.id, g.name)}
+                  title="Delete">
+                  ✕
+                </button>
               </div>
             </div>
             <div className="gc-name">{g.name}</div>
