@@ -4,7 +4,7 @@ const CATEGORY_COLORS = [
   "card-pink", "card-green", "card-red", "card-yellow", "card-indigo", "card-cyan"
 ];
 
-export default function GroupList({ groups, currentUser, onSelect }) {
+export default function GroupList({ groups, currentUser, onSelect, onDelete, onRename }) {
   if (groups.length === 0) {
     return (
       <div className="empty-state">
@@ -28,7 +28,10 @@ export default function GroupList({ groups, currentUser, onSelect }) {
             onClick={() => onSelect(g)}>
             <div className="gc-top">
               <span className="gc-emoji">{CATEGORY_EMOJIS[i % CATEGORY_EMOJIS.length]}</span>
-              <div className="gc-arrow">→</div>
+              <div className="gc-actions" onClick={e => e.stopPropagation()}>
+                <button className="gc-action-btn" onClick={e => onRename(e, g.id, g.name)} title="Rename">✎</button>
+                <button className="gc-action-btn gc-delete-btn" onClick={e => onDelete(e, g.id)} title="Delete">✕</button>
+              </div>
             </div>
             <div className="gc-name">{g.name}</div>
             <div className="gc-date">
