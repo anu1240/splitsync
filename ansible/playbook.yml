@@ -58,13 +58,20 @@
         state: started
         enabled: yes
 
+    - name: Fix repo ownership
+      shell: chown -R ubuntu:ubuntu {{ app_dir }} || true
+      ignore_errors: yes
+
+    - name: Fix git safe directory
+      shell: git config --global --add safe.directory {{ app_dir }} || true
+      ignore_errors: yes
+
     - name: Clone/pull latest code
       git:
         repo: "{{ lookup('env', 'GIT_REPO_URL') }}"
         dest: "{{ app_dir }}"
         version: main
         force: yes
-
     - name: Set EC2 IP environment variable
       lineinfile:
         path: /etc/environment
