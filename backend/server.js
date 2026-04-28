@@ -71,8 +71,19 @@ app.post('/api/groups', async (req, res) => {
 });
 
 app.get('/api/groups', async (req, res) => {
-  const result = await pool.query('SELECT * FROM groups ORDER BY created_at DESC');
-  res.json(result.rows);
+  const { member } = req.query;
+  if (member) {
+    const result = await pool.query(`
+      SELECT DISTINCT g.* FROM groups g
+      JOIN members m ON m.group_id = g.id
+      WHERE m.name ILIKE $1
+      ORDER BY g.created_at DESC
+    `, [member]);
+    res.json(result.rows);
+  } else {
+    const result = await pool.query('SELECT * FROM groups ORDER BY created_at DESC');
+    res.json(result.rows);
+  }
 });
 
 app.get('/api/groups/:id', async (req, res) => {

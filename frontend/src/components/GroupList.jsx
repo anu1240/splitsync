@@ -30,7 +30,7 @@ export default function GroupList({ groups, currentUser, onSelect, onDelete, onR
               <span className="gc-emoji">{CATEGORY_EMOJIS[i % CATEGORY_EMOJIS.length]}</span>
               <div className="gc-actions" onClick={e => e.stopPropagation()}>
                 <button className="gc-action-btn" onClick={e => onRename(e, g.id, g.name)} title="Rename">✎</button>
-                <button className="gc-action-btn gc-delete-btn" onClick={e => onDelete(e, g.id)} title="Delete">✕</button>
+                <button className="gc-action-btn gc-delete-btn" onClick={e => onDelete(e, g.id, g.name)} title="Delete">✕</button>
               </div>
             </div>
             <div className="gc-name">{g.name}</div>

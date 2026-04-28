@@ -24,7 +24,7 @@ export default function App() {
   }, []);
 
   async function fetchGroups() {
-    const res = await fetch(`${API}/api/groups`);
+    const res = await fetch(`${API}/api/groups?member=${encodeURIComponent(userName)}`);
     const data = await res.json();
     setGroups(data);
   }
