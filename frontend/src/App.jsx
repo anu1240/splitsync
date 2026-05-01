@@ -96,7 +96,7 @@ export default function App() {
         <div className="header-inner">
           <div className="logo" onClick={() => setSelectedGroup(null)} style={{ cursor: "pointer" }}>
             <span className="logo-bolt">⚡</span>
-            <span className="logo-word">SplittSync</span>
+            <span className="logo-word">SplitSync</span>
           </div>
           <div className="header-center">
             {selectedGroup && (
