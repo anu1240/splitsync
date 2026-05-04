@@ -30,7 +30,7 @@ export default function Landing({ onEnter }) {
 
           <h1 className="landing-title">
             Split expenses.<br />
-            <span className="landing-title-accent">Stay friends.</span>
+            <span className="landing-title-accent">Stay friend.</span>
           </h1>
 
           <p className="landing-desc">
